@@ -1,6 +1,7 @@
 package com.example.SnowpipeRest.rest;
 
 import com.example.SnowpipeRest.utils.EnqueueResponse;
+import com.example.SnowpipeRest.utils.IngestEngineConfig;
 import com.example.SnowpipeRest.utils.InvalidPayloadResponse;
 import com.example.SnowpipeRest.utils.TableNotFoundResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,22 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/snowpipe")
 public class Resource {
 
-  static final IngestEngine ingestEngine = new IngestEngine();
+  static IngestEngine ingestEngine;
 
-  static {
-    ingestEngine.init();
+  private void lazyLoadIngestEngine() {
+    if (ingestEngine == null) {
+      synchronized (IngestEngine.class) {
+        if (ingestEngine == null) {
+          IngestEngineConfig config = new IngestEngineConfig();
+          ingestEngine =
+              new IngestEngine(
+                  config.getMaxBufferRowCount(),
+                  config.getNumThreads(),
+                  config.getMaxDurationToDrainMs(),
+                  config.getMaxRecordsToDrain());
+        }
+      }
+    }
   }
 
   @PutMapping("/insert/{database}/{schema}/{table}")
@@ -25,6 +38,7 @@ public class Resource {
       @PathVariable String schema,
       @PathVariable String table,
       @RequestBody String body) {
+    lazyLoadIngestEngine();
     return ingestEngine.enqueueData(database, schema, table, body);
   }
 

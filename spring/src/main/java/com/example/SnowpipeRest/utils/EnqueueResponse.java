@@ -1,11 +1,14 @@
 package com.example.SnowpipeRest.utils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class EnqueueResponse {
-  String message;
-  int rowsEnqueued;
-  int rowsRejected;
+  public String message;
+  public int rowsEnqueued;
+  public int rowsRejected;
+
+  public EnqueueResponse() {}
 
   @JsonProperty("message")
   public String getMessage() {

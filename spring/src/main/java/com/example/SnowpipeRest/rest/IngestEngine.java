@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
  *
  * - Enqueue requests can come in from one or more threads - Each thread
  */
-@Component
 public class IngestEngine {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IngestEngine.class);
@@ -38,27 +37,13 @@ public class IngestEngine {
   // of the app. This is used to reason about replay and the like later on
   private long epochTs;
 
-  // The maximum row count that any buffer should have
-  @Value("${rest_api.buffer_manager_max_buffer_row_count}")
-  private int maxBufferRowCount;
-
-  @Value("${rest_api.drain_manager_num_threads}")
-  private int numThreads;
-
-  @Value("${rest_api.drain_manager_max_duration_to_drain_ms}")
-  private int maxDurationToDrainMs;
-
-  @Value("${rest_api.drain_manager_max_records_to_drain}")
-  private int maxRecordsToDrain;
-
   /**
    * Default constructor. Note that this MUST be empty due to how Spring does property to BEAN
    * binding.
    */
-  public IngestEngine() {}
+  public IngestEngine(
+      long maxBufferRowCount, int numThreads, int maxDurationToDrainMs, int maxRecordsToDrain) {
 
-  @PostConstruct
-  public void init() {
     LOGGER.info("Initializing Ingest Engine...");
     this.bufferManager = new BufferManager(maxBufferRowCount);
     this.epochTs = System.currentTimeMillis();
